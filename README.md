@@ -48,3 +48,10 @@ Log pipelines often need to answer "how many errors per minute?" without retaini
 - Severity matching is **case-sensitive**. `'INFO'` is counted as `unknown`, not `info`. Pick your casing upstream, or normalise before calling `record`.
 - Unknown severities are **counted, not dropped**. They land in `unknown` and `total` but never in any canonical level's counter. This is so a typo in a log call does not silently erase evidence.
 - `now` is a required constructor argument, not defaulted to `Date.now()`. The intent is to make time-injection impossible to forget; a missing clock fails loudly at construction rather than producing tests that pass locally and flake under load.
+
+## Design notes
+
+The window stores values eagerly rather than keeping running aggregates. Running
+sums drift with floating point over long streams, and recomputing from a small
+buffer is cheap enough that the drift is not worth the speed.
+
